@@ -67,14 +67,25 @@ def _convert_out_params(f):
     if out_annotation and getattr(out_annotation, "__origin__", None) is tuple:
         out_names = sig.return_annotation._fields
         # If out is a tuple, we need to register a function that unpacks all the out
-        # elements as this is what native_functions.yaml expects
+        # elements as this is what native_functions.yaml expects. This also occurs
+        # if there is a single out element with a name other than "out", with
+        # the NamedTuple encoding the out parameter name.
 
         @wraps(f)
         def _fn(*args, **kwargs):
             out_kwargs = tuple(kwargs.pop(o, None) for o in out_names)
+
             # Either all of the out kwargs are set or none of them
             is_none = out_kwargs[0] is None
             assert all((o is None) == is_none for o in out_kwargs)
+
+            # If there is a single tensor out parameter not named out, the
+            # output will be a single length named tuple. Return the single
+            # element instead.
+            if len(out_names) == 1:
+                result = f(*args, **kwargs, out=None if is_none else out_kwargs)
+                return result[0]
+
             return f(*args, **kwargs, out=None if is_none else out_kwargs)
 
         out_params = [

@@ -194,8 +194,21 @@ def _safe_copy_out(
 
 
 def out_wrapper(*out_names: str, exact_dtype: bool = False):
-    is_tensor = len(out_names) == 0
-    assert is_tensor or len(out_names) >= 2
+    # The wrapped function needs conversation of output parameters to ensure
+    # compatability between the Python API (which always uses "out" as the
+    # parameter name and may be a tuple) and the Aten API (which may have
+    # multiple output parematers and use different parameter names such as
+    # "grad_input", "indices" or "values".)
+
+    default_out_names = ("out",)
+    if len(out_names) == 0:
+        # Use default in out na,me
+        out_names = default_out_names
+
+    # If there is one tensor and the output name is "out", simply return the
+    # Tensor. Otherwise return it as as single named tuple to encode the name
+    # of the parameter.
+    is_tensor_named_out = (out_names == default_out_names)
 
     def _out_wrapper(fn: Callable) -> Callable:
         """
@@ -203,12 +216,12 @@ def out_wrapper(*out_names: str, exact_dtype: bool = False):
         """
         out_type = (
             TensorLikeType
-            if is_tensor
+            if is_tensor_named_out
             else Tuple[tuple(TensorLikeType for _ in range(len(out_names)))]
         )
         return_type = (
             TensorLikeType
-            if is_tensor
+            if is_tensor_named_out
             else NamedTuple(
                 f"return_types_{fn.__name__}", [(o, TensorLikeType) for o in out_names]
             )
@@ -227,9 +240,16 @@ def out_wrapper(*out_names: str, exact_dtype: bool = False):
                         kwargs[k] = out_attr
 
             result = fn(*args, **kwargs)
+
+            # If there is a single tensor out parameter not named "out", we
+            # will convert it into a single length tuple to match the
+            # NamedTuple encoding used to indicate the name of the out parameter.
+            if not is_tensor_named_out and len(out_names) == 1:
+                result = (result,)
+
             assert (
                 isinstance(result, TensorLike)
-                and is_tensor
+                and is_tensor_named_out
                 or isinstance(result, Tuple)  # type: ignore[arg-type]
                 and len(result) == len(out_names)
             )
@@ -250,7 +270,7 @@ def out_wrapper(*out_names: str, exact_dtype: bool = False):
                 # the output tensor, but not the result--which will
                 # be a normal meta tensor, but this is perfectly
                 # harmless.
-                if is_tensor:
+                if is_tensor_named_out:
                     assert isinstance(out, TensorLike)
                     # These two operations are done in-place
                     _maybe_resize_out(out, result.shape)
@@ -268,7 +288,7 @@ def out_wrapper(*out_names: str, exact_dtype: bool = False):
             else:
                 out = result
             # mypy does not see through  the definition of out_type given that it's in a different scope
-            return out if is_tensor else return_type(*out)  # type: ignore[operator]
+            return out if is_tensor_named_out else return_type(*out)  # type: ignore[operator]
 
         out_param = inspect.Parameter(
             "out",
