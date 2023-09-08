@@ -136,7 +136,9 @@ class MaybeOwned final {
   }
 
   MaybeOwned& operator=(MaybeOwned&& rhs) noexcept(
-      std::is_nothrow_move_assignable<T>::value) {
+      std::is_nothrow_move_assignable<T>::value&&
+          std::is_nothrow_move_constructible<T>::value&&
+              std::is_nothrow_destructible<T>::value) {
     if (this == &rhs) {
       return *this;
     }

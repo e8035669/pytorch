@@ -87,7 +87,6 @@ struct TORCH_API ProfilerConfig {
       bool with_flops = false,
       bool with_modules = false,
       ExperimentalConfig experimental_config = ExperimentalConfig());
-  ~ProfilerConfig() = default;
 
   bool disabled() const;
   bool global() const;

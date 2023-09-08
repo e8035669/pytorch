@@ -22,6 +22,7 @@ class TORCH_API IMethod {
   using IValueList = std::vector<c10::IValue>;
   using IValueMap = std::unordered_map<std::string, at::IValue>;
 
+  IMethod() = default;
   IMethod(const IMethod&) = default;
   IMethod& operator=(const IMethod&) = default;
   IMethod(IMethod&&) noexcept = default;

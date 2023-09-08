@@ -1096,7 +1096,6 @@ Code::Code(
           remaining_bailout_depth)) {}
 
 Code::Code(CodeImpl* codeImpl) : pImpl(codeImpl) {}
-Code::~Code() = default;
 
 MobileCode::MobileCode(
     const std::shared_ptr<Graph>& graph,
@@ -1112,8 +1111,6 @@ MobileCode::MobileCode(
           support_default_args_before_out,
           emit_promoted_ops,
           remaining_bailout_depth)) {}
-
-MobileCode::~MobileCode() = default;
 
 const std::vector<GraphExecutor*>& Code::grad_executors() {
   return pImpl->grad_executors();
@@ -1168,7 +1165,6 @@ InterpreterState::InterpreterState(const Code& code, TaskLauncher taskLauncher)
     : pImpl(c10::make_intrusive<InterpreterStateImpl>(
           code,
           std::move(taskLauncher))) {}
-InterpreterState::~InterpreterState() = default;
 
 void InterpreterState::run(Stack& stack) {
   static_cast<InterpreterStateImpl*>(pImpl.get())->run(stack);

@@ -894,6 +894,7 @@ if(NOT MSVC)
 
   append_cxx_flag_if_supported("-Wno-error=deprecated-copy-with-dtor" CMAKE_CXX_FLAGS)
   append_cxx_flag_if_supported("-Wno-error=deprecated-copy-dtor" CMAKE_CXX_FLAGS)
+  append_cxx_flag_if_supported("-Wno-error=deprecated" CMAKE_CXX_FLAGS)
   append_cxx_flag_if_supported("-Wno-error=pedantic" CMAKE_CXX_FLAGS)
   append_cxx_flag_if_supported("-Wno-error=old-style-cast" CMAKE_CXX_FLAGS)
   append_cxx_flag_if_supported("-Wno-error=inconsistent-missing-override" CMAKE_CXX_FLAGS)
