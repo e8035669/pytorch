@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace torch {
 
@@ -37,11 +38,10 @@ struct MultiType : public Type {
       : types(accepted_types){};
 
   bool is_matching(PyObject* object) override {
-    auto it = std::find(types.begin(), types.end(), py_typename(object));
-    return it != types.end();
+    return types.find(py_typename(object)) != types.end();
   }
 
-  std::vector<std::string> types;
+  std::unordered_set<std::string> types;
 };
 
 struct NullableType : public Type {
@@ -136,9 +136,9 @@ std::vector<std::string> _splitString(
 std::unique_ptr<Type> _buildType(std::string type_name, bool is_nullable) {
   std::unique_ptr<Type> result;
   if (type_name == "float") {
-    result = torch::make_unique<MultiType>(MultiType{"float", "int", "long"});
+    result = torch::make_unique<MultiType>("float", "int", "long");
   } else if (type_name == "int") {
-    result = torch::make_unique<MultiType>(MultiType{"int", "long"});
+    result = torch::make_unique<MultiType>("int", "long");
   } else if (type_name.find("tuple[") == 0) {
     auto type_list = type_name.substr(6);
     type_list.pop_back();

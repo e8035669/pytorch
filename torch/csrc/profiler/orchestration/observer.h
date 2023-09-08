@@ -49,7 +49,6 @@ struct TORCH_API ExperimentalConfig {
       std::vector<std::string> performance_events = {},
       bool enable_cuda_sync_events = false,
       bool adjust_timestamps = false);
-  ~ExperimentalConfig() = default;
   explicit operator bool() const;
 
   std::vector<std::string> profiler_metrics;

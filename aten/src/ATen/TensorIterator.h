@@ -91,6 +91,11 @@ class TORCH_API OpaqueOptionalTensorRef {
 
  public:
   OpaqueOptionalTensorRef();
+  OpaqueOptionalTensorRef(const OpaqueOptionalTensorRef&) = default;
+  OpaqueOptionalTensorRef& operator=(const OpaqueOptionalTensorRef&) = default;
+  OpaqueOptionalTensorRef(OpaqueOptionalTensorRef&&) noexcept = default;
+  OpaqueOptionalTensorRef& operator=(OpaqueOptionalTensorRef&&) noexcept =
+      default;
   ~OpaqueOptionalTensorRef();
 
   OptionalTensorRef* get() {
@@ -130,6 +135,10 @@ struct TORCH_API OperandInfo {
     validate();
   }
 
+  C10_ALWAYS_INLINE OperandInfo(const OperandInfo&) = default;
+  C10_ALWAYS_INLINE OperandInfo& operator=(const OperandInfo&) = default;
+  C10_ALWAYS_INLINE OperandInfo(OperandInfo&&) noexcept = default;
+  C10_ALWAYS_INLINE OperandInfo& operator=(OperandInfo&&) noexcept = default;
   C10_ALWAYS_INLINE ~OperandInfo() = default;
 
   /// The data pointer. This may be different from tensor->data_ptr() if the
