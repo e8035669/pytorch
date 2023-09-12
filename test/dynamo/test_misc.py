@@ -56,7 +56,9 @@ from torch.testing._internal.common_cuda import (
     TEST_CUDA,
     TEST_MULTIGPU,
 )
-from torch.testing._internal.common_methods_invocations import sample_inputs_gather
+from torch.testing._internal.common_methods_invocations import (
+    sample_inputs_take_along_dim,
+)
 from torch.testing._internal.common_utils import freeze_rng_state, IS_FBCODE
 from torch.testing._internal.jit_utils import JitTestCase
 
@@ -1287,8 +1289,8 @@ class MiscTests(torch._dynamo.test_case.TestCase):
             return tuple(a.numpy() if isinstance(a, torch.Tensor) else a for a in args)
 
         samples = list(
-            sample_inputs_gather(
-                None, "cpu", torch.float32, requires_grad=False, include_0d=False
+            sample_inputs_take_along_dim(
+                None, "cpu", torch.float32, requires_grad=False
             )
         )
         cnts = torch._dynamo.testing.CompileCounter()
@@ -1296,6 +1298,11 @@ class MiscTests(torch._dynamo.test_case.TestCase):
         i = 1
         for sample in samples:
             args = sample_to_args(sample)
+            # swap args order
+            if len(args) < 3:
+                args = (args[0], 1, args[1])  # use ndim=1
+            else:
+                args = (args[0], args[2], args[1])
             self.assertEqual(fn(*args), opt_fn(*args))
             self.assertEqual(cnts.frame_count, i)
             i += 1
