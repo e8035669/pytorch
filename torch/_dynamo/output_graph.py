@@ -595,9 +595,11 @@ class OutputGraph(Checkpointable[OutputGraphState]):
         return obj
 
     def new_var(self, name="tmp"):
+        graph_names = {node.name for node in self.graph.nodes}
         existing = set(self.code_options["co_varnames"])
+        existing.update(graph_names)
         for i in itertools.count():
-            var = f"___{name}_{i}"
+            var = f"{name}_{i}"
             if var not in existing:
                 self.code_options["co_varnames"] += (var,)
                 return var
@@ -986,7 +988,6 @@ class OutputGraph(Checkpointable[OutputGraphState]):
         graph_sizes_log.debug(
             "%s", LazyString(lambda: self.get_graph_sizes_log_str(name))
         )
-
         compiled_fn = self.call_user_compiler(gm)
         compiled_fn = disable(compiled_fn)
 
