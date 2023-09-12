@@ -28,7 +28,7 @@ bool ScriptListIterator::done() const {
 
 namespace {
 py::list scriptListToPyList(const ScriptList& src) {
-  py::list out(src.len());
+  py::list out((ptrdiff_t) src.len());
   auto iter = src.iter();
 
   size_t i = 0;
